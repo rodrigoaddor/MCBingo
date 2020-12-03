@@ -1,0 +1,4 @@
+name: bingo
+version: 0.0-SNAPSHOT
+api-version: 1.16
+main: io.github.rodrigoaddor.bingo.BingoPlugin

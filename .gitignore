@@ -1,0 +1,6 @@
+server
+.gradle
+.idea
+gradle
+app/build
+generator/build

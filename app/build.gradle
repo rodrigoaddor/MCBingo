@@ -1,0 +1,53 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "1.4.10"
+    id "org.jetbrains.kotlin.kapt" version "1.4.10"
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+    id "de.undercouch.download" version "4.1.1"
+}
+
+group "io.github.rodrigoaddor"
+version "1.0-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+    maven { url = "https://papermc.io/repo/repository/maven-public/" }
+    maven { url = "https://raw.githubusercontent.com/JorelAli/CommandAPI/mvn-repo/" }
+    maven { url = "https://repo.codemc.org/repository/maven-public/" }
+}
+
+dependencies {
+    kapt(project(":generator"))
+    compileOnly(project(":generator"))
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    compileOnly "com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT"
+    compile "dev.jorel:commandapi-shade:5.2"
+}
+
+shadowJar {
+    dependencies {
+        include dependency("dev.jorel:commandapi-shade:5.2")
+        include dependency("org.jetbrains.kotlin:kotlin-stdlib")
+    }
+}
+
+task downloadServer(type: Download) {
+    src "https://papermc.io/api/v1/paper/$paperVersion/latest/download"
+    dest "$rootDir/server/paper.jar"
+    onlyIfModified true
+}
+
+task copyPlugin(type: Copy) {
+    dependsOn("shadowJar")
+    from shadowJar.archiveFile
+    into "$rootDir/server/plugins"
+}
+
+task runServer(type: JavaExec) {
+    dependsOn('downloadServer')
+    dependsOn('copyPlugin')
+    standardInput = System.in
+    classpath = files("$rootDir/server/paper.jar")
+    workingDir = "$rootDir/server"
+    maxHeapSize '3G'
+    args 'nogui'
+}
